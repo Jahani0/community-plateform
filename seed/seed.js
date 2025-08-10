@@ -1,0 +1,105 @@
+const connectToDatabase = require("../config/db");
+const { UserModel, hashPassword } = require("../models/User");
+const { PostModel } = require("../models/Post");
+const { EmergencyModel } = require("../models/Emergency");
+
+async function runSeed() {
+    await connectToDatabase();
+
+    console.log("🌱 Seeding database...");
+
+    await Promise.all([
+        UserModel.deleteMany({}),
+        PostModel.deleteMany({}),
+        EmergencyModel.deleteMany({}),
+    ]);
+
+    const users = await UserModel.insertMany([
+        {
+            name: "Admin",
+            email: "admin@example.com",
+            password: hashPassword("admin"),
+            role: "admin",
+            isVolunteer: true,
+            isVolunteerVerified: true,
+        },
+        {
+            name: "John Doe",
+            email: "john@example.com",
+            password: hashPassword("password"),
+            role: "user",
+            isVolunteer: false,
+            isVolunteerVerified: false,
+        },
+    ]);
+
+    await PostModel.insertMany([
+        {
+            type: "request",
+            title: "Need food supplies",
+            description: "Family needs emergency food in downtown area",
+            category: "Food",
+            priority: "High",
+            location: "Downtown",
+            contact_info: "555-1234",
+            status: "active",
+        },
+        {
+            type: "offer",
+            title: "Offering shelter for 2",
+            description: "Can host two people for a week",
+            category: "Shelter",
+            priority: "Medium",
+            location: "Uptown",
+            contact_info: "555-5678",
+            status: "active",
+        },
+    ]);
+
+    await EmergencyModel.insertMany([
+        {
+            name: "National Emergency Service (Police, Ambulance, Fire)",
+            category: "Police",
+            main_area: "National",
+            city: "Bangladesh",
+            full_address: "Toll-free nationwide, 24/7",
+            phone: "999",
+            fax: "",
+        },
+        {
+            name: "Bangladesh Fire Service and Civil Defence",
+            category: "Fire Service",
+            main_area: "National",
+            city: "Bangladesh",
+            full_address: "Access via 999 (toll-free nationwide)",
+            phone: "999",
+            fax: "",
+        },
+        {
+            name: "Shastho Batayon (Health Line)",
+            category: "Hospital",
+            main_area: "National",
+            city: "Bangladesh",
+            full_address: "Government health advice and referral, 24/7",
+            phone: "16263",
+            fax: "",
+        },
+        {
+            name: "Anjuman-e-Mofidul Islam Ambulance",
+            category: "Volunteers",
+            main_area: "Kakrail",
+            city: "Dhaka",
+            full_address: "Ambulance service",
+            phone: "9336611",
+            fax: "",
+        },
+    ]);
+
+    console.log("✅ Seeding complete");
+    process.exit(0);
+}
+
+runSeed().catch((err) => {
+    console.error("❌ Seed failed:", err);
+    process.exit(1);
+});
