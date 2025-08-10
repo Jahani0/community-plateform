@@ -1,21 +1,27 @@
 // config/db.js
-const mysql = require('mysql2/promise');
+require("dotenv").config();
+const mongoose = require("mongoose");
 
-const db = mysql.createPool({
-  host: 'localhost',
-  user: 'root',
-  password: '', 
-  database: 'community_help',
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0
-});
+async function connectToDatabase() {
+    const uri = process.env.MONGODB_URI;
+    if (!uri) {
+        const error = new Error(
+            "MONGODB_URI environment variable is required but not set"
+        );
+        console.error("❌", error.message);
+        throw error;
+    }
+    try {
+        await mongoose.connect(uri, {
+            serverSelectionTimeoutMS: 10000,
+        });
+        console.log("✅ MongoDB connection established");
+    } catch (err) {
+        console.error("❌ MongoDB connection failed:", err.message);
+        // In serverless environments, do not exit the process
+        // Let the caller handle the error and possibly retry on next invocation
+        throw err;
+    }
+}
 
-db.getConnection()
-  .then(() => console.log('✅ MySQL connection pool established'))
-  .catch(err => {
-    console.error('❌ MySQL connection failed:', err.message);
-    process.exit(1);
-  });
-
-module.exports = db;
+module.exports = connectToDatabase;
