@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const path = require("path");
 const { attachUser } = require("./middleware/auth");
+const { connectToDatabase } = require("./config/db");
 
 // routes
 const emergencyRoutes = require("./routes/emergencyRoutes");
@@ -14,7 +15,7 @@ const donationRoutes = require("./routes/donationRoutes");
 // const incidentRoutes = require("./routes/incidentRoutes"); // disabled per scope
 // const historyRoutes = require("./routes/historyRoutes"); // disabled per scope
 const volunteerRoutes = require("./routes/volunteerRoutes");
-// const adminRoutes = require("./routes/adminRoutes"); // disabled per scope
+const adminRoutes = require("./routes/adminRoutes");
 
 const app = express();
 const REQUEST_LOGS_ENABLED =
@@ -36,6 +37,10 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.use(express.json());
+// Ensure DB initialized for any cold starts in long-lived server
+connectToDatabase().catch((e) => {
+    console.error("DB init error:", e);
+});
 app.use(attachUser);
 
 app.use((req, _res, next) => {
@@ -68,6 +73,9 @@ if (REQUEST_LOGS_ENABLED) console.log("✅ donationRoutes loaded");
 
 app.use("/api/volunteers", volunteerRoutes);
 if (REQUEST_LOGS_ENABLED) console.log("✅ volunteerRoutes loaded");
+
+app.use("/api/admin", adminRoutes);
+if (REQUEST_LOGS_ENABLED) console.log("✅ adminRoutes loaded");
 // app.use("/api/messages", messageRoutes); // disabled per scope
 // app.use("/api/learning", learningRoutes); // disabled per scope
 // app.use("/api/incidents", incidentRoutes); // disabled per scope
@@ -96,6 +104,11 @@ app.get("/auth", (_req, res) => {
 app.get("/emergency.html", (_req, res) => {
     if (REQUEST_LOGS_ENABLED) console.log("📄 Serving emergency.html");
     res.sendFile(path.join(__dirname, "public", "emergency.html"));
+});
+
+app.get("/admin.html", (_req, res) => {
+    if (REQUEST_LOGS_ENABLED) console.log("📄 Serving admin.html");
+    res.sendFile(path.join(__dirname, "public", "admin.html"));
 });
 
 // 404 handler
