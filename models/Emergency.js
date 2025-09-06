@@ -1,30 +1,39 @@
-const { getSql } = require("../config/db");
+const mongoose = require("mongoose");
+
+const emergencySchema = new mongoose.Schema(
+    {
+        name: { type: String, required: true },
+        category: { type: String, required: true },
+        main_area: { type: String, required: true },
+        city: { type: String, required: true },
+        full_address: { type: String },
+        phone: { type: String },
+        fax: { type: String },
+    },
+    { timestamps: true, collection: "emergency_contacts" }
+);
+
+const EmergencyModel =
+    mongoose.models.Emergency || mongoose.model("Emergency", emergencySchema);
 
 const getAllContacts = async () => {
-    const sql = getSql();
-    const rows = await sql`select * from emergency_contacts order by category asc, main_area asc`;
-    return rows;
+    return EmergencyModel.find({}).sort({ category: 1, main_area: 1 }).lean();
 };
 
 const getContactsByCategory = async (category) => {
-    const sql = getSql();
-    const rows = await sql`select * from emergency_contacts where category = ${category} order by main_area asc`;
-    return rows;
+    return EmergencyModel.find({ category }).sort({ main_area: 1 }).lean();
 };
 
 const searchContactsByArea = async (searchTerm) => {
-    const sql = getSql();
-    const q = "%" + String(searchTerm) + "%";
-    const rows = await sql`
-        select * from emergency_contacts
-        where main_area ilike ${q} or city ilike ${q}
-        order by category asc, main_area asc
-    `;
-    return rows;
+    const regex = new RegExp(searchTerm, "i");
+    return EmergencyModel.find({ $or: [{ main_area: regex }, { city: regex }] })
+        .sort({ category: 1, main_area: 1 })
+        .lean();
 };
 
 module.exports = {
     getAllContacts,
     getContactsByCategory,
     searchContactsByArea,
+    EmergencyModel,
 };
