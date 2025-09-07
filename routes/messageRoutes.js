@@ -1,19 +1,21 @@
 const express = require("express");
 const router = express.Router();
-const { requireAuth } = require("../middleware/auth");
 const messageController = require("../controllers/messageController");
+const { requireAuth } = require("../middleware/auth");
 
-router.post("/start", requireAuth, messageController.startConversation);
-router.get("/conversations", requireAuth, messageController.listConversations);
-router.get(
-    "/:conversationId/messages",
-    requireAuth,
-    messageController.getMessages
-);
-router.post(
-    "/:conversationId/messages",
-    requireAuth,
-    messageController.postMessage
-);
+// All message routes require authentication
+router.use(requireAuth);
+
+// Send a message
+router.post("/send", messageController.sendMessage);
+
+// Get conversation with another user
+router.get("/conversation/:userId", messageController.getConversation);
+
+// Get list of all conversations
+router.get("/conversations", messageController.getConversationsList);
+
+// Get unread message count
+router.get("/unread-count", messageController.getUnreadCount);
 
 module.exports = router;

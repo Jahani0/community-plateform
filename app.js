@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const path = require("path");
 const { attachUser } = require("./middleware/auth");
+const { connectToDatabase } = require("./config/db");
 
 // routes
 const emergencyRoutes = require("./routes/emergencyRoutes");
@@ -36,6 +37,10 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.use(express.json());
+// Ensure DB initialized for any cold starts in long-lived server
+connectToDatabase().catch((e) => {
+    console.error("DB init error:", e);
+});
 app.use(attachUser);
 
 app.use((req, _res, next) => {
@@ -106,6 +111,31 @@ app.get("/auth", (_req, res) => {
 app.get("/emergency.html", (_req, res) => {
     if (REQUEST_LOGS_ENABLED) console.log("📄 Serving emergency.html");
     res.sendFile(path.join(__dirname, "public", "emergency.html"));
+});
+
+app.get("/messages.html", (_req, res) => {
+    if (REQUEST_LOGS_ENABLED) console.log("📄 Serving messages.html");
+    res.sendFile(path.join(__dirname, "public", "messages.html"));
+});
+
+app.get("/learning.html", (_req, res) => {
+    if (REQUEST_LOGS_ENABLED) console.log("📄 Serving learning.html");
+    res.sendFile(path.join(__dirname, "public", "learning.html"));
+});
+
+app.get("/incidents.html", (_req, res) => {
+    if (REQUEST_LOGS_ENABLED) console.log("📄 Serving incidents.html");
+    res.sendFile(path.join(__dirname, "public", "incidents.html"));
+});
+
+app.get("/history.html", (_req, res) => {
+    if (REQUEST_LOGS_ENABLED) console.log("📄 Serving history.html");
+    res.sendFile(path.join(__dirname, "public", "history.html"));
+});
+
+app.get("/admin.html", (_req, res) => {
+    if (REQUEST_LOGS_ENABLED) console.log("📄 Serving admin.html");
+    res.sendFile(path.join(__dirname, "public", "admin.html"));
 });
 
 // 404 handler

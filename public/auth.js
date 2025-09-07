@@ -7,7 +7,7 @@
             headers: { Authorization: `Bearer ${token}` },
         });
         if (res.ok) {
-            window.location.href = "/";
+            window.location.href = "index.html";
             return;
         }
         // Clear invalid token
@@ -122,7 +122,7 @@ if (signInBtn) {
                 localStorage.setItem("auth_token", data.token);
                 localStorage.setItem("user_id", data.userId);
             }
-            window.location.href = "/";
+            window.location.href = "index.html";
         } catch (err) {
             console.error("Network error:", err);
             signinError.innerText = "❌ Network error. Please try again.";
@@ -154,10 +154,44 @@ if (demoBtn) {
                 localStorage.setItem("auth_token", data.token);
                 localStorage.setItem("user_id", data.userId);
             }
-            window.location.href = "/";
+            window.location.href = "index.html";
         } catch (err) {
             console.error("Demo login error:", err);
             if (signinError) signinError.innerText = "❌ Demo login error.";
+        }
+    });
+}
+
+// ADMIN ACCOUNT LOGIN
+const adminBtn = document.getElementById("adminLoginBtn");
+if (adminBtn) {
+    adminBtn.addEventListener("click", async () => {
+        const signinError = document.getElementById("signinError");
+        if (signinError) signinError.innerText = "";
+        try {
+            const res = await fetch("/api/users/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    email: "admin@example.com",
+                    password: "admin",
+                }),
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                signinError.innerText =
+                    data.message || "❌ Admin login failed.";
+                return;
+            }
+            if (data.token) {
+                localStorage.setItem("auth_token", data.token);
+                localStorage.setItem("user_id", data.userId);
+            }
+            // Redirect to admin dashboard
+            window.location.href = "/admin.html";
+        } catch (err) {
+            console.error("Admin login error:", err);
+            if (signinError) signinError.innerText = "❌ Admin login error.";
         }
     });
 }

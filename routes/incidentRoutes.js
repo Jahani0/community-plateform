@@ -1,11 +1,23 @@
 const express = require("express");
 const router = express.Router();
-const { requireAuth } = require("../middleware/auth");
 const incidentController = require("../controllers/incidentController");
+const { requireAuth, requireRole } = require("../middleware/auth");
 
-router.post("/", requireAuth, incidentController.create);
+// Public routes
 router.get("/", incidentController.list);
+router.get("/:id", incidentController.getById);
+
+// Protected routes (require authentication)
+router.post("/", incidentController.create); // Allow anonymous reporting
 router.put("/:id", requireAuth, incidentController.update);
 router.delete("/:id", requireAuth, incidentController.remove);
+
+// Admin-only routes
+router.get(
+    "/admin/stats",
+    requireAuth,
+    requireRole("admin"),
+    incidentController.getStats
+);
 
 module.exports = router;
